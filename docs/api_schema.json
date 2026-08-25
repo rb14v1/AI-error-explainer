@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Error Explainer API Specification",
+  "description": "OpenAPI / JSON Schema specification for the AI Error Explainer API powered by a single Error Explainer Agent and Version 1 Branding. Requires NO external API keys.",
+  "version": "1.0.0",
+  "branding": {
+    "name": "Version 1",
+    "logo": {
+      "type": "triangular_faceted_ribbon",
+      "description": "Triangular shape composed of 3 overlapping folded ribbon/triangle facets"
+    },
+    "colors": {
+      "primary_teal": "#00B8B9",
+      "primary_navy": "#052C39",
+      "background_light": "#FFFFFF",
+      "surface_light": "#F4F8F9",
+      "border_light": "#E2E8F0"
+    }
+  },
+  "auth": {
+    "required": false,
+    "description": "Local deterministic analysis by Error Explainer Agent — No external API keys required."
+  },
+  "endpoints": {
+    "/api/explain/": {
+      "post": {
+        "summary": "Process an error input using the Error Explainer Agent",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["error_message"],
+                "properties": {
+                  "error_message": {
+                    "type": "string",
+                    "description": "The exact error message or exception string",
+                    "example": "TypeError: Cannot read property 'map' of undefined"
+                  },
+                  "stack_trace": {
+                    "type": "string",
+                    "description": "Optional stack trace string",
+                    "example": "TypeError: Cannot read property 'map' of undefined\n    at UserList (UserList.tsx:14:18)"
+                  },
+                  "code_snippet": {
+                    "type": "string",
+                    "description": "Optional surrounding code snippet",
+                    "example": "const UserList = ({ users }) => {\n  return <div>{users.map(u => <p key={u.id}>{u.name}</p>)}</div>;\n};"
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Optional programming language identifier",
+                    "example": "typescript"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Error Explainer Agent response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "error_type",
+                    "what_happened",
+                    "why_it_happened",
+                    "how_to_fix_it",
+                    "corrected_code",
+                    "prevention_tips",
+                    "severity",
+                    "confidence"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["success", "partial", "error"],
+                      "example": "success"
+                    },
+                    "error_type": {
+                      "type": "string",
+                      "description": "Error Type / Category classification",
+                      "example": "TypeError / Undefined Access"
+                    },
+                    "what_happened": {
+                      "type": "string",
+                      "description": "Simple plain language explanation of what happened",
+                      "example": "The code tried to loop over 'users' using .map(), but 'users' had no value (undefined) when the function ran."
+                    },
+                    "why_it_happened": {
+                      "type": "string",
+                      "description": "Root cause analysis explaining why it occurred",
+                      "example": "The parent component called UserList without passing the 'users' prop, or the data fetch request had not completed yet."
+                    },
+                    "how_to_fix_it": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Step-by-step fix instructions",
+                      "example": [
+                        "Define a default empty array parameter for users (users = []).",
+                        "Use optional chaining (users?.map(...)) before calling array methods.",
+                        "Add a loading check in the parent component before rendering UserList."
+                      ]
+                    },
+                    "corrected_code": {
+                      "type": "string",
+                      "description": "Corrected example code fix snippet",
+                      "example": "const UserList = ({ users = [] }: { users?: Array<{ id: string; name: string }> }) => {\n  return <div>{users?.map(u => <p key={u.id}>{u.name}</p>)}</div>;\n};"
+                    },
+                    "prevention_tips": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Actionable tips to prevent recurrence",
+                      "example": [
+                        "Enable strictNullChecks in tsconfig.json.",
+                        "Use TypeScript interface default props or fallbacks for all array components."
+                      ]
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["Low", "Medium", "High", "Critical"],
+                      "example": "High"
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "minimum": 0.0,
+                      "maximum": 1.0,
+                      "example": 0.95
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "error_message field is required."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/": {
+      "get": {
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "service": {
+                      "type": "string",
+                      "example": "AI Error Explainer API"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
