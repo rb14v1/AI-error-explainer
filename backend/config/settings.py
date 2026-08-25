@@ -1,12 +1,15 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required and must not be empty")
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
@@ -42,11 +45,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+_database_url = os.getenv('DATABASE_URL')
+if not _database_url:
+    raise ValueError("DATABASE_URL environment variable is required and must not be empty")
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(_database_url, conn_max_age=600),
 }
 
 AUTH_PASSWORD_VALIDATORS = [
