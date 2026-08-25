@@ -1,12 +1,15 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required and must not be empty")
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
@@ -42,37 +45,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ---------------------------------------------------------------------------
-# Database
-# ---------------------------------------------------------------------------
-# In production, set DATABASE_URL to a PostgreSQL connection string, e.g.:
-#   DATABASE_URL=postgresql://user:pass@<rds-endpoint>:5432/dbname
-# When DATABASE_URL is absent the application falls back to a local SQLite
-# file so that local development requires no external services.
-# The production PostgreSQL instance is provisioned by Terraform (see
-# terraform/) with automated backups, 30-day retention, and PITR enabled.
-# ---------------------------------------------------------------------------
-_DATABASE_URL = os.getenv('DATABASE_URL', '')
-if _DATABASE_URL.startswith('postgresql://') or _DATABASE_URL.startswith('postgres://'):
-    import urllib.parse as _urlparse
-    _parsed = _urlparse.urlparse(_DATABASE_URL)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': _parsed.path.lstrip('/'),
-            'USER': _parsed.username,
-            'PASSWORD': _parsed.password,
-            'HOST': _parsed.hostname,
-            'PORT': _parsed.port or 5432,
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+_database_url = os.getenv('DATABASE_URL')
+if not _database_url:
+    raise ValueError("DATABASE_URL environment variable is required and must not be empty")
+DATABASES = {
+    'default': dj_database_url.parse(_database_url, conn_max_age=600),
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

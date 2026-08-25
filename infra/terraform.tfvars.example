@@ -1,0 +1,10 @@
+# Copy this file to terraform.tfvars and fill in real values before running
+# `terraform plan` or `terraform apply`.
+#
+# These values are required by the finops.resources_tagged compliance control:
+# every cloud resource must carry tenantId, submissionId, and costCentre tags.
+
+tenant_id     = "your-tenant-id"
+submission_id = "your-submission-id"
+cost_centre   = "your-cost-centre"
+aws_region    = "eu-west-1"
